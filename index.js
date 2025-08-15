@@ -213,7 +213,7 @@ const toolExecutors = {
 };
 
 // ---------- Endpoint ---------- //
-app.post('/', async (req, res) => {
+app.post('/ask-ai', async (req, res) => {
   const start = Date.now();
 
   const userRequest = req.body.prompt || 'Can you make a quarterly performance PDF for Project Alpha with the title, date, prepared by, and key metrics? Then email it to me at itsme@julia.com. Also, what’s a good way to start my meeting based on this report?';
@@ -233,7 +233,6 @@ User request: ${userRequest}`
   tools: [{ functionDeclarations: tools }],
     };
 
-
   console.log('📤 Sending request to Gemini with body:', JSON.stringify(body, null, 2));
 
   const llmStart = Date.now();
@@ -250,7 +249,6 @@ User request: ${userRequest}`
   const parts = llmData?.candidates?.[0]?.content?.parts || [];
   const toolCalls = [];
 
-  // Separate text and tool calls
   for (const p of parts) {
     if (p.functionCall) {
       toolCalls.push(p.functionCall);
