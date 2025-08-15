@@ -31,10 +31,70 @@ function generateWordSnippet(content) { return { content }; }
 
 // ---------- Tools ----------
 export const tools = [
-    { name: 'generateReportPDF', parameters: { type: 'object', properties: { reportData: { type: 'object' } }, required: ['reportData'] } },
-    { name: 'draftEmail', parameters: { type: 'object', properties: { to: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } }, required: ['to','subject','body'] } },
-    { name: 'generateWordSnippet', parameters: { type: 'object', properties: { content: { type: 'string' } }, required: ['content'] } },
-    { name: 'informUser', parameters: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] } },
+  {
+    name: 'generateReportPDF',
+    description: 'Generates a PDF file based on the provided report data, including formatting and layout.',
+    parameters: {
+      type: 'object',
+      properties: {
+        reportData: {
+          type: 'object',
+          description: 'An object containing all the necessary data to be included in the PDF report, such as titles, tables, charts, and text content.'
+        }
+      },
+      required: ['reportData']
+    }
+  },
+  {
+    name: 'draftEmail',
+    description: 'Creates an email draft ready for sending, including recipient, subject, and message body.',
+    parameters: {
+      type: 'object',
+      properties: {
+        to: {
+          type: 'string',
+          description: 'The email address of the recipient.'
+        },
+        subject: {
+          type: 'string',
+          description: 'The subject line of the email.'
+        },
+        body: {
+          type: 'string',
+          description: 'The main content of the email body, supporting plain text or HTML.'
+        }
+      },
+      required: ['to', 'subject', 'body']
+    }
+  },
+  {
+    name: 'generateWordSnippet',
+    description: 'Generates a Microsoft Word-compatible snippet based on the provided text content.',
+    parameters: {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'string',
+          description: 'The text or formatted content to be inserted into a Word document snippet.'
+        }
+      },
+      required: ['content']
+    }
+  },
+  {
+    name: 'informUser',
+    description: 'Sends an informational message to the user without executing any action.',
+    parameters: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: 'The message text to display to the user, explaining the next step or providing context.'
+        }
+      },
+      required: ['message']
+    }
+  }
 ];
 
 export const toolExecutors = {

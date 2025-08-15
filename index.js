@@ -31,11 +31,13 @@ app.post('/ask-ai', async (req, res) => {
 
   const body = {
     contents: [{ role: 'user', parts: [{ text: `
+You're a helpful assistant that does all you can to help without asking questions.
 You have tools. 
 You can use multiple tools.
-Use informUser to tell the user what you will do.
-Use informUser to tell the user when it's node.
-Never promise and don't call the function.
+Decide on what tools you will call.
+Then use informUser to tell the user what you will do.
+Use informUser again to tell the user when the other functions are done.
+Never promise and forget calling the function.
 \nUser request: ${userRequest}` }] }],
     tools: [{ functionDeclarations: tools }]
   };
