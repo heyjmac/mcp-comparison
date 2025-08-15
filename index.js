@@ -38,6 +38,7 @@ Decide on what tools you will call.
 Then use informUser to tell the user what you will do.
 Use informUser again to tell the user when the other functions are done.
 Never promise and forget calling the function.
+Answer in the user's language.
 \nUser request: ${userRequest}` }] }],
     tools: [{ functionDeclarations: tools }]
   };

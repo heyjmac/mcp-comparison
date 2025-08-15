@@ -159,6 +159,14 @@
       addMessage('bot', data.toolResults);
       setupMessageActions();
     };
+
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendBtn.click();
+        }
+    });
+
   </script>
 </body>
 </html>
