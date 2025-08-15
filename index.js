@@ -19,7 +19,7 @@ const GEMINI_URL =
   GEMINI_API_KEY;
 
 // ---------- Local functions ----------
-function answerUser(message) { return { message }; }
+function informUser(message) { return { message }; }
 function generateReportPDF(reportData) {
   return new Promise((resolve) => {
     const fileName = `report_${Date.now()}.pdf`;
@@ -42,20 +42,22 @@ function generateReportPDF(reportData) {
     });
   });
 }
-
 function sendEmail(to, subject, body) { return { status: 'sent', to, subject, body }; }
+function generateWordSnippet(content) { return { content }; }
 
 // ---------- Tools ----------
 const tools = [
-  { name: 'answerUser', parameters: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] } },
-  { name: 'generateReportPDF', parameters: { type: 'object', properties: { reportData: { type: 'object' } }, required: ['reportData'] } },
-  { name: 'sendEmail', parameters: { type: 'object', properties: { to: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } }, required: ['to','subject','body'] } },
+    { name: 'generateReportPDF', parameters: { type: 'object', properties: { reportData: { type: 'object' } }, required: ['reportData'] } },
+    { name: 'sendEmail', parameters: { type: 'object', properties: { to: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } }, required: ['to','subject','body'] } },
+    { name: 'generateWordSnippet', parameters: { type: 'object', properties: { content: { type: 'string' } }, required: ['content'] } },
+    { name: 'informUser', parameters: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] } },
 ];
 
 const toolExecutors = {
-  answerUser: ({ message }) => answerUser(message),
-  generateReportPDF: ({ reportData }) => generateReportPDF(reportData),
-  sendEmail: ({ to, subject, body }) => sendEmail(to, subject, body),
+    informUser: ({ message }) => informUser(message),
+    generateReportPDF: ({ reportData }) => generateReportPDF(reportData),
+    generateWordSnippet: ({ content }) => generateWordSnippet(content),
+    sendEmail: ({ to, subject, body }) => sendEmail(to, subject, body),
 };
 
 
@@ -72,7 +74,13 @@ app.post('/ask-ai', async (req, res) => {
   console.log('📝 Extracted userRequest:', userRequest);
 
   const body = {
-    contents: [{ role: 'user', parts: [{ text: `You have tools. Always use answerUser.\nUser request: ${userRequest}` }] }],
+    contents: [{ role: 'user', parts: [{ text: `
+You have tools. 
+You can use multiple tools.
+Use informUser to tell the user what you will do.
+Use informUser to tell the user when it's node.
+Never promise and don't call the function.
+\nUser request: ${userRequest}` }] }],
     tools: [{ functionDeclarations: tools }]
   };
   console.log('📦 Sending to Gemini:', JSON.stringify(body, null, 2));
