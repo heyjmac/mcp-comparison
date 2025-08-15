@@ -33,9 +33,16 @@ function generateReportPDF(reportData) {
       doc.fontSize(12).text(`${key}: ${value}`);
     });
     doc.end();
-    stream.on('finish', () => resolve({ fileName, filePath }));
+    stream.on('finish', () => {
+    resolve({
+        fileName,
+        filePath,
+        publicUrl: `/downloads/${fileName}`
+        });
+    });
   });
 }
+
 function sendEmail(to, subject, body) { return { status: 'sent', to, subject, body }; }
 
 // ---------- Tools ----------
