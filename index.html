@@ -17,6 +17,21 @@
         </button>
       </div>
     </div>
+    <div class="sticky bottom-0 bg-white flex items-center gap-2 text-sm text-gray-500 px-6 pb-6 pt-3 border-t border-gray-100">
+        <span class="mr-1">Tools:</span>
+        <div class="px-3 py-1 rounded-full transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm">email</span>
+        <span>Email</span>
+        </div>
+        <div class="px-3 py-1 rounded-full transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm text-red-500">picture_as_pdf</span>
+        <span>PDF</span>
+        </div>
+        <div class="px-3 py-1 rounded-full transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm text-blue-600">description</span>
+        <span>Word</span>
+        </div>
+    </div>
   </div>
 
   <script>
@@ -35,7 +50,7 @@
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-blue-500 text-sm">description</span>
-                    <h3 class="text-sm font-medium">Word Document</h3>
+                    <h3 class="text-sm font-medium">Documento Word</h3>
                     </div>
                     <button class="text-blue-600 text-xs hover:text-blue-700">Copy</button>
                 </div>
@@ -44,7 +59,7 @@
                 </div>
                 </div>
             `;
-        } else if (r.tool === 'sendEmail') {
+        } else if (r.tool === 'draftEmail') {
           return `
             <div class="border border-gray-200 rounded-lg mb-4 overflow-hidden transition-all hover:shadow-md">
               <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
@@ -52,7 +67,9 @@
                   <span class="material-symbols-outlined text-gray-500 text-sm">email</span>
                   <h3 class="text-sm font-medium">Email to ${r.output.to}</h3>
                 </div>
+                <button class="text-blue-600 text-xs hover:text-blue-700">${r.output.status}</button>
                 <button class="text-blue-600 text-xs hover:text-blue-700">Copy</button>
+                <button class="text-blue-600 text-xs hover:text-blue-700">Send</button>
               </div>
               <div class="p-3 bg-white">
                 <p class="text-sm font-medium mb-1">Subject: ${r.output.subject}</p>

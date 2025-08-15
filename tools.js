@@ -26,13 +26,13 @@ function generateReportPDF(reportData) {
     });
   });
 }
-function sendEmail(to, subject, body) { return { status: 'sent', to, subject, body }; }
+function draftEmail(to, subject, body) { return { status: 'draft', to, subject, body }; }
 function generateWordSnippet(content) { return { content }; }
 
 // ---------- Tools ----------
 export const tools = [
     { name: 'generateReportPDF', parameters: { type: 'object', properties: { reportData: { type: 'object' } }, required: ['reportData'] } },
-    { name: 'sendEmail', parameters: { type: 'object', properties: { to: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } }, required: ['to','subject','body'] } },
+    { name: 'draftEmail', parameters: { type: 'object', properties: { to: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } }, required: ['to','subject','body'] } },
     { name: 'generateWordSnippet', parameters: { type: 'object', properties: { content: { type: 'string' } }, required: ['content'] } },
     { name: 'informUser', parameters: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] } },
 ];
@@ -41,5 +41,5 @@ export const toolExecutors = {
     informUser: ({ message }) => informUser(message),
     generateReportPDF: ({ reportData }) => generateReportPDF(reportData),
     generateWordSnippet: ({ content }) => generateWordSnippet(content),
-    sendEmail: ({ to, subject, body }) => sendEmail(to, subject, body),
+    draftEmail: ({ to, subject, body }) => draftEmail(to, subject, body),
 };
