@@ -9,6 +9,7 @@
   <div id="app" class="flex-1 flex flex-col overflow-hidden">
     <h1 class="text-2xl font-light mb-4 px-6 pt-6">Chat Assistant</h1>
     <div id="messages" class="flex-1 overflow-y-auto border-t border-b border-gray-100 mb-4 p-6 flex flex-col gap-6"></div>
+
     <div class="sticky bottom-0 bg-white px-6 pb-6 pt-3 border-t border-gray-100 relative">
       <div class="relative">
         <input id="input" type="text" class="w-full border border-gray-200 rounded-lg py-3 px-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Type your message..." />
@@ -17,19 +18,20 @@
         </button>
       </div>
     </div>
+
     <div class="sticky bottom-0 bg-white flex items-center gap-2 text-sm text-gray-500 px-6 pb-6 pt-3 border-t border-gray-100">
         <span class="mr-1">Tools:</span>
         <div class="px-3 py-1 rounded-full transition-colors flex items-center gap-1">
-        <span class="material-symbols-outlined text-sm">email</span>
-        <span>Email</span>
+          <span class="material-symbols-outlined text-sm">email</span>
+          <span>Email</span>
         </div>
         <div class="px-3 py-1 rounded-full transition-colors flex items-center gap-1">
-        <span class="material-symbols-outlined text-sm text-red-500">picture_as_pdf</span>
-        <span>PDF</span>
+          <span class="material-symbols-outlined text-sm text-red-500">picture_as_pdf</span>
+          <span>PDF</span>
         </div>
         <div class="px-3 py-1 rounded-full transition-colors flex items-center gap-1">
-        <span class="material-symbols-outlined text-sm text-blue-600">description</span>
-        <span>Word</span>
+          <span class="material-symbols-outlined text-sm text-blue-600">description</span>
+          <span>Word</span>
         </div>
     </div>
   </div>
@@ -39,26 +41,49 @@
     const inputEl = document.getElementById('input');
     const sendBtn = document.getElementById('send');
 
+    function setupMessageActions() {
+      // Copy button
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.onclick = () => {
+          const textToCopy = btn.closest('.border').querySelector('pre, .email-body')?.innerText || '';
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+          });
+        };
+      });
+
+      // Send button
+        document.querySelectorAll('.send-btn').forEach(btn => {
+            btn.onclick = () => {
+                const to = encodeURIComponent(btn.dataset.to);
+                const subject = encodeURIComponent(btn.dataset.subject);
+                const body = encodeURIComponent(btn.dataset.body);
+                window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+            };
+        });
+    }
+
     function renderBotArtifacts(results) {
       return results.map(r => {
         if (r.tool === 'informUser') {
           return `<p class="mb-4">${r.output.message}</p>`;
         }
-        if (r.tool === 'generateWordSnippet') {
-            return `
-                <div class="border border-gray-200 rounded-lg mb-4 overflow-hidden transition-all hover:shadow-md">
-                <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-blue-500 text-sm">description</span>
-                    <h3 class="text-sm font-medium">Documento Word</h3>
-                    </div>
-                    <button class="text-blue-600 text-xs hover:text-blue-700">Copy</button>
+        if (r.tool === 'generateTextFile') {
+          return `
+            <div class="border border-gray-200 rounded-lg mb-4 overflow-hidden transition-all hover:shadow-md">
+              <div class="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-blue-500 text-sm">description</span>
+                  <h3 class="text-sm font-medium">Documento Word</h3>
                 </div>
-                <div class="p-3 bg-white">
-                    <pre class="text-sm whitespace-pre-wrap">${r.output.content}</pre>
-                </div>
-                </div>
-            `;
+                <button class="copy-btn text-blue-600 text-xs hover:text-blue-700">Copy</button>
+              </div>
+              <div class="p-3 bg-white">
+                <pre class="text-sm whitespace-pre-wrap">${r.output.content}</pre>
+              </div>
+            </div>
+          `;
         } else if (r.tool === 'draftEmail') {
           return `
             <div class="border border-gray-200 rounded-lg mb-4 overflow-hidden transition-all hover:shadow-md">
@@ -67,11 +92,15 @@
                   <span class="material-symbols-outlined text-gray-500 text-sm">email</span>
                   <h3 class="text-sm font-medium">Email to ${r.output.to}</h3>
                 </div>
-                <button class="text-blue-600 text-xs hover:text-blue-700">${r.output.status}</button>
-                <button class="text-blue-600 text-xs hover:text-blue-700">Copy</button>
-                <button class="text-blue-600 text-xs hover:text-blue-700">Send</button>
+                <button class="copy-btn text-blue-600 text-xs hover:text-blue-700">Copy</button>
+                <button class="send-btn text-blue-600 text-xs hover:text-blue-700"
+                  data-to="${r.output.to}" 
+                  data-subject="${r.output.subject}" 
+                  data-body="${r.output.body}">
+                  Send
+                </button>
               </div>
-              <div class="p-3 bg-white">
+              <div class="p-3 bg-white email-body">
                 <p class="text-sm font-medium mb-1">Subject: ${r.output.subject}</p>
                 <p class="text-sm mb-3">To: ${r.output.to}</p>
                 <p class="text-sm mb-2">${r.output.body}</p>
@@ -128,6 +157,7 @@
       });
       const data = await res.json();
       addMessage('bot', data.toolResults);
+      setupMessageActions();
     };
   </script>
 </body>

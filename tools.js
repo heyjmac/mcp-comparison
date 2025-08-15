@@ -27,7 +27,7 @@ function generateReportPDF(reportData) {
   });
 }
 function draftEmail(to, subject, body) { return { status: 'draft', to, subject, body }; }
-function generateWordSnippet(content) { return { content }; }
+function generateTextFile(content) { return { content }; }
 
 // ---------- Tools ----------
 export const tools = [
@@ -68,14 +68,14 @@ export const tools = [
     }
   },
   {
-    name: 'generateWordSnippet',
-    description: 'Generates a Microsoft Word-compatible snippet based on the provided text content.',
+    name: 'generateTextFile',
+    description: 'Generates a Microsoft Word-compatible based on the provided text content.',
     parameters: {
       type: 'object',
       properties: {
         content: {
           type: 'string',
-          description: 'The text or formatted content to be inserted into a Word document snippet.'
+          description: 'The full text or formatted content to be inserted into a Word document.'
         }
       },
       required: ['content']
@@ -100,6 +100,6 @@ export const tools = [
 export const toolExecutors = {
     informUser: ({ message }) => informUser(message),
     generateReportPDF: ({ reportData }) => generateReportPDF(reportData),
-    generateWordSnippet: ({ content }) => generateWordSnippet(content),
+    generateTextFile: ({ content }) => generateTextFile(content),
     draftEmail: ({ to, subject, body }) => draftEmail(to, subject, body),
 };
