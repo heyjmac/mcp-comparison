@@ -1,6 +1,7 @@
 import { InformUser, GenerateTextFile, DraftEmail, GenerateReportPDF } from './ToolArtifacts'
 
-export default function ToolRenderer({ tool, output }) {
+export default function ToolRenderer({ toolData }) {
+  const { tool, output } = toolData;
   switch (tool) {
     case 'informUser':
       return <InformUser output={output} />
@@ -11,6 +12,9 @@ export default function ToolRenderer({ tool, output }) {
     case 'generateReportPDF':
       return <GenerateReportPDF output={output} />
     default:
+      if (output?.message) {
+        return <InformUser output={output} />
+      }
       return (
         <div className="border border-gray-200 rounded-lg p-3">
           <h3 className="text-sm font-medium">{tool}</h3>

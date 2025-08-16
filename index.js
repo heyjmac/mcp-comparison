@@ -1,83 +1,80 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
-import { toolExecutors, tools } from './tools.js';
-dotenv.config();
+import express from 'express'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import fetch from 'node-fetch'
+import dotenv from 'dotenv'
+import { WebSocketServer } from 'ws'
+import { toolExecutors, tools } from './tools.js'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config()
 
-const app = express();
-app.use(express.json());
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=' +
-  GEMINI_API_KEY;
-
-const clientDistPath = path.join(__dirname, 'client', 'dist');
-app.use(express.static(clientDistPath));
-
+const app = express()
+const clientDistPath = path.join(__dirname, 'client', 'dist')
+app.use(express.static(clientDistPath))
 app.get('/', (req, res) => {
-  res.sendFile(path.join(clientDistPath, 'index.html'));
-});
+  res.sendFile(path.join(clientDistPath, 'index.html'))
+})
 
-app.post('/ask-ai', async (req, res) => {
-  console.log('📥 Incoming request body:', req.body);
+const server = app.listen(3000, () => console.log('http://localhost:3000'))
+const wss = new WebSocketServer({ server })
 
-    const userRequest = req.body.prompt || '';
-  console.log('📝 Extracted userRequest:', userRequest);
+// Recursively send chunks
+const sendChunks = (ws, obj, basePath = 'payload') => {
+  if (Array.isArray(obj)) {
+    obj.forEach((v, i) => sendChunks(ws, v, `${basePath}[${i}]`))
+  } else if (obj && typeof obj === 'object') {
+    for (const key in obj) {
+      sendChunks(ws, obj[key], `${basePath}.${key}`)
+    }
+  } else {
+    ws.send(JSON.stringify({ position: basePath, payload: obj }))
+  }
+}
+
+wss.on('connection', ws => {
+  ws.on('message', async message => {
+    const { prompt } = JSON.parse(message)
 
     const body = {
-    contents: [{ role: 'user', parts: [{ text: `
-You're a helpful assistant that does all you can to help without asking questions.
-You have tools. 
-You can use multiple tools.
-Decide on what tools you will call.
-Then use informUser to tell the user what you will do.
-Use informUser again to tell the user when the other functions are done.
-Never promise and forget calling the function.
-Answer in the user's language.
-\nUser request: ${userRequest}` }] }],
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: `You're a helpful assistant... \nUser request: ${prompt}`
+        }]
+      }],
       tools: [{ functionDeclarations: tools }]
-    };
-  console.log('📦 Sending to Gemini:', JSON.stringify(body, null, 2));
-
-  try {
-    const llmRes = await fetch(GEMINI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    console.log('🌐 LLM Response status:', llmRes.status);
-
-    const llmData = await llmRes.json();
-    console.log('📄 LLM Response data:', JSON.stringify(llmData, null, 2));
-
-    const parts = llmData?.candidates?.[0]?.content?.parts || [];
-    console.log('🔍 Extracted parts:', parts);
-
-    const toolCalls = parts.filter(p => p.functionCall).map(p => p.functionCall);
-    console.log('🛠 Tool calls:', toolCalls);
-
-    const results = [];
-    for (const call of toolCalls) {
-      if (toolExecutors[call.name]) {
-        console.log(`⚙️ Executing tool: ${call.name} with args:`, call.args);
-        const output = await toolExecutors[call.name](call.args || {});
-        console.log(`✅ Tool output for ${call.name}:`, output);
-        results.push({ tool: call.name, output });
-      } else {
-        console.warn(`⚠️ No executor found for tool: ${call.name}`);
-      }
     }
 
-    console.log('📤 Final results:', results);
-    res.json({ toolResults: results });
-  } catch (error) {
-    console.error('❌ Error in /ask-ai:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=' + process.env.GEMINI_API_KEY,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    )
 
-app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
+    const data = await response.json()
+    const parts = data?.candidates?.[0]?.content?.parts || []
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+    const toolCalls = parts.filter(p => p.functionCall).map(p => p.functionCall)
+
+    for (let i = 0; i < parts.length; i++) {
+        const p = parts[i]
+        const base = `payload[${i}]`
+
+        if (p.functionCall) {
+            const { name, args } = p.functionCall
+            sendChunks(ws, name, `${base}.tool`)
+            sendChunks(ws, args, `${base}.args`)
+
+            if (toolExecutors[name]) {
+            const output = await toolExecutors[name](args || {})
+            sendChunks(ws, output, `${base}.output`)
+            }
+        } else if (p.text) {
+            sendChunks(ws, { message: p.text }, `${base}.output`)
+        }
+    }
+
+  })
+})
