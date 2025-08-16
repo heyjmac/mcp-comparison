@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename)
 const app = express()
 const clientDistPath = path.join(__dirname, 'client', 'dist')
 app.use(express.static(clientDistPath))
+app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')))
 app.get('/', (req, res) => {
   res.sendFile(path.join(clientDistPath, 'index.html'))
 })
