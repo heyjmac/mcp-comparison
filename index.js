@@ -17,19 +17,20 @@ const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=' +
   GEMINI_API_KEY;
 
-app.use(express.static(path.join(__dirname)));
+const clientDistPath = path.join(__dirname, 'client', 'dist');
+app.use(express.static(clientDistPath));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(clientDistPath, 'index.html'));
 });
 
 app.post('/ask-ai', async (req, res) => {
   console.log('📥 Incoming request body:', req.body);
 
-  const userRequest = req.body.prompt || '';
+    const userRequest = req.body.prompt || '';
   console.log('📝 Extracted userRequest:', userRequest);
 
-  const body = {
+    const body = {
     contents: [{ role: 'user', parts: [{ text: `
 You're a helpful assistant that does all you can to help without asking questions.
 You have tools. 
@@ -40,8 +41,8 @@ Use informUser again to tell the user when the other functions are done.
 Never promise and forget calling the function.
 Answer in the user's language.
 \nUser request: ${userRequest}` }] }],
-    tools: [{ functionDeclarations: tools }]
-  };
+      tools: [{ functionDeclarations: tools }]
+    };
   console.log('📦 Sending to Gemini:', JSON.stringify(body, null, 2));
 
   try {

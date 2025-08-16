@@ -1,13 +1,15 @@
 {
-  "name": "mcp-comparison",
+  "name": "gemini-streaming-with-functions",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is a fullstack Express.js & React application that integrates with Google Gemini API to stream responses and handle predefined local functions.",
   "license": "ISC",
   "author": "",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start": "npm run build && node index.js"
   },
   "dependencies": {
     "dotenv": "^17.2.1",
